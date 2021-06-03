@@ -33,7 +33,8 @@ class Fridge:
         ]
         self.last = {}
         self.deriv = {}
-        self.bottom_temp = 9
+        self.thread = None
+        self.bottom_temp = 2
         self.GRATE_SENSOR = "818VH3RT10FA"
         self.ROOM_SENSOR = "81QJH3RT10FA"
         self.EXHAUST_SENSOR = "8158P3RTZ7FA"
@@ -87,10 +88,12 @@ class Fridge:
         while not self.EXIT:
             self.tick()
             time.sleep(self.TICK_TIME)
+        self.thread = None
 
     def stop(self):
         self.EXIT = True
 
     def start(self):
         self.EXIT = False
-        self.thread = _thread.start_new_thread(self.run_controller, ())
+        if self.thread == None:
+            self.thread = _thread.start_new_thread(self.run_controller, ())

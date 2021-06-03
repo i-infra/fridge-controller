@@ -1,10 +1,29 @@
-import socket
-import machine
+import usocket as socket
 import uhashlib
 import _thread
-import time
+import utime as time
 
-ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+
+try:
+    import machine
+
+    RAW_MACHINE_ID = machine.unique_id()
+    reset_function = machine.reset
+except:
+    import ubinascii
+
+    for source in ["/sys/class/block/mmcblk0/device/cid", "UNIQUE_ID.txt"]:
+        RAW_MACHINE_ID = ubinascii.unhexlify(open(source).read().strip())
+        break
+
+    def reset_function():
+        print("not actually resetting")
+
+
+# non-rfc compliant but maximally good
+# ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+# da RFC version
+ENCODING = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 ENCODING_LEN = len(ENCODING)
 
 
@@ -19,17 +38,17 @@ def encode_b32(integer, length):
     return "".join(out)
 
 
-RAW_MACHINE_UID = machine.unique_id()
 SALT = b"SALT FOR ADDED SECURITY"
 
 
-MACHINE_UID = int.from_bytes(uhashlib.sha256(RAW_MACHINE_UID + SALT).digest(), "little")
+MACHINE_UID = int.from_bytes(uhashlib.sha256(RAW_MACHINE_ID + SALT).digest(), "little")
 MACHINE_STR = encode_b32(MACHINE_UID, 16)
+OTP_URL = "otpauth://totp/ureset:reset?secret=" + MACHINE_STR
 
 
 def reset_in(seconds):
     time.sleep(seconds)
-    machine.reset()
+    reset_function()
 
 
 def wait_for_magic():
