@@ -25,5 +25,6 @@ if debug:
 import fridge
 
 walkin = fridge.Fridge()
-
+walkin.bottom_temp=0
+walkin.TICK_TIME=10
 walkin.start()

@@ -43,7 +43,11 @@ class TelnetWrapper(IOBase):
 
                 readbytes += 1
             except (IndexError, OSError) as e:
-                if type(e) == IndexError or len(e.args) > 0 and e.args[0] == errno.EAGAIN:
+                if (
+                    type(e) == IndexError
+                    or len(e.args) > 0
+                    and e.args[0] == errno.EAGAIN
+                ):
                     if readbytes == 0:
                         return None
                     else:

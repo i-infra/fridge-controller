@@ -8,7 +8,6 @@ import known_APs
 
 sta_if = network.WLAN(network.STA_IF)
 
-
 def start_sta():
     sta_if.active(True)
 
@@ -20,7 +19,7 @@ def start_sta():
             sta_if.connect(AP_name, known_APs.known_APs[AP_name], listen_interval=-1)
             break
 
-    connect_attempt_count = 1000
+    connect_attempt_count = 100
     while (connect_attempt_count > 0) and not sta_if.isconnected():
         time.sleep(0.1)
         connect_attempt_count -= 1
@@ -37,3 +36,4 @@ def start_sta():
         except Exception:
             print("failed to set time")
         return sta_if
+
