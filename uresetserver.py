@@ -8,7 +8,7 @@ try:
     import machine
 
     RAW_MACHINE_ID = machine.unique_id()
-    reset_function = machine.reset
+    reset_function = machine.WDT
 except:
     import ubinascii
 
@@ -47,8 +47,8 @@ OTP_URL = "otpauth://totp/ureset:reset?secret=" + MACHINE_STR
 
 
 def reset_in(seconds):
-    time.sleep(seconds)
-    reset_function()
+    print("started wdt")
+    machine.WDT(timeout=1000 * seconds)
 
 
 def wait_for_magic():
