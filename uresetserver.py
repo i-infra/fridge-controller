@@ -47,8 +47,9 @@ OTP_URL = "otpauth://totp/ureset:reset?secret=" + MACHINE_STR
 
 
 def reset_in(seconds):
-    print('started wdt')
-    machine.WDT(timeout=1000*seconds)
+    print("started wdt")
+    machine.WDT(timeout=1000 * seconds)
+
 
 def wait_for_magic():
     # (R)ESET = 3537

@@ -80,15 +80,25 @@ def ping(host, count=3, timeout=1000, interval=10, quiet=False, size=32):
             if socks:
                 resp = socks[0].recv(4096)
                 resp_mv = memoryview(resp)
-                h2 = uctypes.struct(uctypes.addressof(resp_mv[20:]), pkt_desc, uctypes.BIG_ENDIAN)
+                h2 = uctypes.struct(
+                    uctypes.addressof(resp_mv[20:]), pkt_desc, uctypes.BIG_ENDIAN
+                )
                 # TODO: validate checksum (optional)
                 seq = h2.seq
-                if h2.type == 0 and h2.id == h.id and (seq in seqs):  # 0: ICMP_ECHO_REPLY
+                if (
+                    h2.type == 0 and h2.id == h.id and (seq in seqs)
+                ):  # 0: ICMP_ECHO_REPLY
                     t_elasped = (utime.ticks_us() - h2.timestamp) / 1000
                     ttl = ustruct.unpack("!B", resp_mv[8:9])[0]  # time-to-live
                     n_recv += 1
                     # not quiet and print("%u bytes from %s: icmp_seq=%u, ttl=%u, time=%f ms" % (len(resp), addr, seq, ttl, t_elasped))
-                    packet = dict(len_bytes=len(resp), peer=addr, icmp_seq=seq, ttl=ttl, time_elapsed=t_elasped)
+                    packet = dict(
+                        len_bytes=len(resp),
+                        peer=addr,
+                        icmp_seq=seq,
+                        ttl=ttl,
+                        time_elapsed=t_elasped,
+                    )
                     not quiet and print(packet)
                     ret.append(packet)
                     seqs.remove(seq)
@@ -106,5 +116,7 @@ def ping(host, count=3, timeout=1000, interval=10, quiet=False, size=32):
 
     # close
     sock.close()
-    not quiet and print("%u packets transmitted, %u packets received" % (n_trans, n_recv))
+    not quiet and print(
+        "%u packets transmitted, %u packets received" % (n_trans, n_recv)
+    )
     return ret

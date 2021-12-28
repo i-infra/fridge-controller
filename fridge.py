@@ -1,8 +1,10 @@
 import machine, onewire, ds18x20, time
 import _thread
 
-rtc = machine.RTC()
+from uping import ping
+import gc
 
+rtc = machine.RTC()
 ENCODING = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
 ENCODING_LEN = len(ENCODING)
 
@@ -24,7 +26,7 @@ get_time = rtc.datetime
 
 
 class Fridge:
-    def __init__(self, compressor_pin=16, onewire_pin=19):
+    def __init__(self, compressor_pin=18, onewire_pin=19, watchdog_target_ip=None):
         self.dx = ds18x20.DS18X20(onewire.OneWire(machine.Pin(onewire_pin)))
         self.compressor = machine.Pin(compressor_pin, machine.Pin.OUT)
         self.sensor_uuids = self.dx.scan()
@@ -34,21 +36,35 @@ class Fridge:
         self.last = {}
         self.deriv = {}
         self.thread = None
-        self.bottom_temp = 0
         self.GRATE_SENSOR = "818VH3RT10FA"
         self.ROOM_SENSOR = "81QJH3RT10FA"
         self.EXHAUST_SENSOR = "8158P3RTZ7FA"
         self.EXIT = False
         self.TICK_TIME = 10
         self.DE_ICE_PERIOD = range(45,60)
+        self.start_time = get_time()
+        self.watchdog = None
+        self.watchdog_target_ip = watchdog_target_ip
+
+    def get_uptime(self):
+        dt_timedatestamp = [a - b for a, b in zip(get_time(), self.start_time)]
+        dt_seconds = sum(
+            (
+                dt_x * dt_units
+                for dt_x, dt_units in zip(dt_timedatestamp[-4:], second_intervals)
+            )
+        )
+        return dt_seconds
 
     def measure(self):
-        self.dx.convert_temp()
-        time.sleep(0.1)
-        data = {
-            self.pretty_sensor_uuids[i]: self.dx.read_temp(s)
-            for (i, s) in enumerate(self.sensor_uuids)
-        }
+        data = {}
+        if self.sensor_uuids:
+            self.dx.convert_temp()
+            time.sleep(0.1)
+            data = {
+                self.pretty_sensor_uuids[i]: self.dx.read_temp(s)
+                for (i, s) in enumerate(self.sensor_uuids)
+            }
         data["timestamp"] = get_time()
         return data
 
@@ -66,7 +82,6 @@ class Fridge:
         dt_timedatestamp = [
             a - b for a, b in zip(now["timestamp"], self.last["timestamp"])
         ]
-        #  {'81QJH3RT10FA': 13.125, '818VH3RT10FA': 8.25, '8158P3RTZ7FA': 20.625, 'timestamp': (2021, 5, 11, 1, 8, 7, 24, 614094)}
         dt_seconds = sum(
             (
                 dt_x * dt_units
@@ -79,22 +94,28 @@ class Fridge:
         if minutes in self.DE_ICE_PERIOD:
             self.bottom_temp = 2
         else:
-            self.bottom_temp = -2
+            self.bottom_temp = 0
         self.set_compressor()
+        if self.watchdog:
+            if (
+                self.watchdog_target_ip and ping(self.watchdog_target_ip, quiet=True)
+            ) or not self.watchdog_target_ip:
+                self.watchdog.feed()
+        gc.collect()
         return self.deriv
 
     def set_compressor(self):
-        elif self.last.get(self.GRATE_SENSOR) < self.bottom_temp:
+        if self.last.get(self.GRATE_SENSOR) < self.bottom_temp:
             self.compressor.off()
         else:
             self.compressor.on()
         return self.compressor.value()
 
     def run_controller(self):
+        self.watchdog = machine.WDT(timeout=60 * 1000 * 2)
         while not self.EXIT:
             self.tick()
             time.sleep(self.TICK_TIME)
-        self.thread = None
 
     def stop(self):
         self.EXIT = True

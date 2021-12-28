@@ -1,25 +1,18 @@
 try:
     import debug
 
-    try:
-        DEBUG_ALLOWED = debug.allowed
-    except:
-        msg = "ATTN: debug.py exists, but debug.allowed not defined!"
-        print(msg)
-        DEBUG_ALLOWED = False
 except:
-    DEBUG_ALLOWED = False
+    debug = False
 
 import networking
-
 station = networking.start_sta()
 
-if DEBUG_ALLOWED:
+if debug:
     import uftpd
     import utelnetserver
     utelnetserver.start()
 
 import fridge
 
-walkin = fridge.Fridge()
+walkin = fridge.Fridge(watchdog_target_ip=networking.gateway)
 walkin.start()

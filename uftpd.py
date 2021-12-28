@@ -66,8 +66,10 @@ class FTP_client:
         self.remote_addr = self.remote_addr[0]
         self.command_client.settimeout(_COMMAND_TIMEOUT)
         log_msg(1, "FTP Command connection from:", self.remote_addr)
-        self.command_client.setsockopt(socket.SOL_SOCKET, _SO_REGISTER_HANDLER, self.exec_ftp_command)
-        self.command_client.sendall("220 Hello, this is the ESP832.\r\n")
+        self.command_client.setsockopt(
+            socket.SOL_SOCKET, _SO_REGISTER_HANDLER, self.exec_ftp_command
+        )
+        self.command_client.sendall("220 Hello, this is the ESP8266.\r\n")
         self.cwd = "/"
         self.fromname = None
         #        self.logged_in = False
@@ -101,7 +103,9 @@ class FTP_client:
         global _month_name
         if full:
             stat = uos.stat(self.get_absolute_path(path, fname))
-            file_permissions = "drwxr-xr-x" if (stat[0] & 0o170000 == 0o040000) else "-rw-r--r--"
+            file_permissions = (
+                "drwxr-xr-x" if (stat[0] & 0o170000 == 0o040000) else "-rw-r--r--"
+            )
             file_size = stat[6]
             tm = localtime(stat[7])
             if tm[0] != localtime()[0]:
@@ -285,13 +289,17 @@ class FTP_client:
             elif command == "LIST" or command == "NLST":
                 if payload.startswith("-"):
                     option = payload.split()[0].lower()
-                    path = self.get_absolute_path(self.cwd, payload[len(option) :].lstrip())
+                    path = self.get_absolute_path(
+                        self.cwd, payload[len(option) :].lstrip()
+                    )
                 else:
                     option = ""
                 try:
                     data_client = self.open_dataclient()
                     cl.sendall("150 Directory listing:\r\n")
-                    self.send_list_data(path, data_client, command == "LIST" or "l" in option)
+                    self.send_list_data(
+                        path, data_client, command == "LIST" or "l" in option
+                    )
                     cl.sendall("226 Done.\r\n")
                     data_client.close()
                 except:
@@ -315,7 +323,9 @@ class FTP_client:
                 try:
                     data_client = self.open_dataclient()
                     cl.sendall("150 Opened data connection.\r\n")
-                    self.save_file_data(path, data_client, "w" if command == "STOR" else "a")
+                    self.save_file_data(
+                        path, data_client, "w" if command == "STOR" else "a"
+                    )
                     # if the next statement is reached,
                     # the data_client was closed.
                     data_client = None
@@ -332,7 +342,9 @@ class FTP_client:
             elif command == "MDTM":
                 try:
                     tm = localtime(uos.stat(path)[8])
-                    cl.sendall("213 {:04d}{:02d}{:02d}{:02d}{:02d}{:02d}\r\n".format(*tm[0:6]))
+                    cl.sendall(
+                        "213 {:04d}{:02d}{:02d}{:02d}{:02d}{:02d}\r\n".format(*tm[0:6])
+                    )
                 except:
                     cl.sendall("550 Fail\r\n")
             elif command == "STAT":
@@ -433,7 +445,9 @@ def accept_ftp_connect(ftpsocket):
 
 def num_ip(ip):
     items = ip.split(".")
-    return int(items[0]) << 24 | int(items[1]) << 16 | int(items[2]) << 8 | int(items[3])
+    return (
+        int(items[0]) << 24 | int(items[1]) << 16 | int(items[2]) << 8 | int(items[3])
+    )
 
 
 def stop():
