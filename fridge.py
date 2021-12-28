@@ -34,12 +34,13 @@ class Fridge:
         self.last = {}
         self.deriv = {}
         self.thread = None
-        self.bottom_temp = 2
+        self.bottom_temp = 0
         self.GRATE_SENSOR = "818VH3RT10FA"
         self.ROOM_SENSOR = "81QJH3RT10FA"
         self.EXHAUST_SENSOR = "8158P3RTZ7FA"
         self.EXIT = False
-        self.TICK_TIME = 60
+        self.TICK_TIME = 10
+        self.DE_ICE_PERIOD = range(45,60)
 
     def measure(self):
         self.dx.convert_temp()
@@ -74,11 +75,16 @@ class Fridge:
         )
         self.deriv["timestamp"] = dt_seconds
         self.last = now
+        minutes = now[5]
+        if minutes in self.DE_ICE_PERIOD:
+            self.bottom_temp = 2
+        else:
+            self.bottom_temp = -2
         self.set_compressor()
         return self.deriv
 
     def set_compressor(self):
-        if self.last.get(self.GRATE_SENSOR) < self.bottom_temp:
+        elif self.last.get(self.GRATE_SENSOR) < self.bottom_temp:
             self.compressor.off()
         else:
             self.compressor.on()
