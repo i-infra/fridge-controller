@@ -14,16 +14,14 @@ import networking
 
 station = networking.start_sta()
 
-if debug:
+if DEBUG_ALLOWED:
     import uftpd
     import utelnetserver
-    from uresetserver import *
-
     utelnetserver.start()
-    start_reset_server()
 
 import fridge
 
 walkin = fridge.Fridge()
-
+walkin.bottom_temp=0
+walkin.TICK_TIME=10
 walkin.start()

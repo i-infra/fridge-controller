@@ -24,7 +24,7 @@ get_time = rtc.datetime
 
 
 class Fridge:
-    def __init__(self, compressor_pin=18, onewire_pin=19):
+    def __init__(self, compressor_pin=16, onewire_pin=19):
         self.dx = ds18x20.DS18X20(onewire.OneWire(machine.Pin(onewire_pin)))
         self.compressor = machine.Pin(compressor_pin, machine.Pin.OUT)
         self.sensor_uuids = self.dx.scan()
