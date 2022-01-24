@@ -66,8 +66,11 @@ class URLOpener:
                     enc_data,
                 )
             elif isinstance(data, bytearray):
-                request += b"Content-Length: %s\r\n\r\n%s\r\n" % (len(data), bytes(data))
-            elif isinstance(data, (bytes,str)):
+                request += b"Content-Length: %s\r\n\r\n%s\r\n" % (
+                    len(data),
+                    bytes(data),
+                )
+            elif isinstance(data, (bytes, str)):
                 request += b"Content-Length: %s\r\n\r\n%s\r\n" % (len(data), data)
             else:
                 raise Exception("data must by bytes, str, or bytearray")
@@ -190,7 +193,7 @@ def quote(s, safe=""):
     res = []
     replacements = {}
     for c in s:
-        if c in always_safe+safe:
+        if c in always_safe + safe:
             res.append(c)
             continue
         res.append("%%%x" % ord(c))
@@ -248,6 +251,7 @@ def b64encode(s, altchars=None):
         assert len(altchars) == 2, repr(altchars)
         return encoded.translate(bytes.maketrans(b"+/", altchars))
     return encoded
+
 
 def b64decode(s):
     return binascii.a2b_base64(s)

@@ -114,7 +114,6 @@ if _IS_PY3:
             val = val >> 8
         return bytes(out)
 
-
 else:
 
     def _dumps_bignum_to_bytearray(val):
@@ -158,7 +157,6 @@ if _IS_PY3:
     def _is_unicode(val):
         return isinstance(val, str)
 
-
 else:
 
     def _is_unicode(val):
@@ -197,7 +195,6 @@ if _IS_PY3:
                 parts.append(dumps(v, sort_keys=sort_keys))
         return b"".join(parts)
 
-
 else:
 
     def dumps_dict(d, sort_keys=False):
@@ -232,7 +229,6 @@ if _IS_PY3:
 
     def _is_intish(x):
         return isinstance(x, int)
-
 
 else:
 
@@ -391,7 +387,6 @@ if _IS_PY3:
             ob[subk] = subv
         return ob, bytes_read
 
-
 else:
 
     def _loads_array(fp, limit, depth, returntags, aux, bytes_read):
@@ -526,7 +521,6 @@ if _IS_PY3:
             out = out << 8
             out = out | ch
         return out
-
 
 else:
 

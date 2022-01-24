@@ -113,14 +113,16 @@ class FTP_client:
                     file_permissions, file_size, _month_name[tm[1]], tm[2], tm[0], fname
                 )
             else:
-                description = "{} 1 owner group {:>10} {} {:2} {:02}:{:02} {}\r\n".format(
-                    file_permissions,
-                    file_size,
-                    _month_name[tm[1]],
-                    tm[2],
-                    tm[3],
-                    tm[4],
-                    fname,
+                description = (
+                    "{} 1 owner group {:>10} {} {:2} {:02}:{:02} {}\r\n".format(
+                        file_permissions,
+                        file_size,
+                        _month_name[tm[1]],
+                        tm[2],
+                        tm[3],
+                        tm[4],
+                        fname,
+                    )
                 )
         else:
             description = fname + "\r\n"
