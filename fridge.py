@@ -26,7 +26,7 @@ get_time = rtc.datetime
 
 
 class Fridge:
-    def __init__(self, compressor_pin=18, onewire_pin=19, watchdog_target_ip=None):
+    def __init__(self, compressor_pin=16, onewire_pin=19, watchdog_target_ip=None):
         self.dx = ds18x20.DS18X20(onewire.OneWire(machine.Pin(onewire_pin)))
         self.compressor = machine.Pin(compressor_pin, machine.Pin.OUT)
         self.sensor_uuids = self.dx.scan()
@@ -41,7 +41,8 @@ class Fridge:
         self.EXHAUST_SENSOR = "8158P3RTZ7FA"
         self.EXIT = False
         self.TICK_TIME = 10
-        self.DE_ICE_PERIOD = range(45,60)
+        self.deicing = False
+        self.DE_ICE_PERIOD = range(30, 45)
         self.start_time = get_time()
         self.watchdog = None
         self.watchdog_target_ip = watchdog_target_ip
@@ -90,11 +91,13 @@ class Fridge:
         )
         self.deriv["timestamp"] = dt_seconds
         self.last = now
-        minutes = now[5]
-        if minutes in self.DE_ICE_PERIOD:
+        minutes = get_time()[5]
+        if minutes in self.DE_ICE_PERIOD or self.last.get(self.GRATE_SENSOR) < -12:
+            self.deicing = True
             self.bottom_temp = 2
         else:
-            self.bottom_temp = 0
+            self.deicing = False
+            self.bottom_temp = -4
         self.set_compressor()
         if self.watchdog:
             if (

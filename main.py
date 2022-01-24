@@ -5,11 +5,13 @@ except:
     debug = False
 
 import networking
+
 station = networking.start_sta()
 
 if debug:
     import uftpd
     import utelnetserver
+
     utelnetserver.start()
 
 import fridge
